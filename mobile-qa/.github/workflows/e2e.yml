@@ -21,6 +21,7 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
+          cache-dependency-path: mobile-qa/package-lock.json
 
       - name: Setup Java JDK 17
         uses: actions/setup-java@v4
@@ -35,11 +36,13 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
       - name: Install Project Dependencies & Appium 2.x Driver
+        working-directory: ./mobile-qa
         run: |
           npm ci
           npx appium driver install uiautomator2 || true
 
       - name: Start Appium Server in Background
+        working-directory: ./mobile-qa
         run: |
           nohup npx appium --base-path / --log-no-colors > appium.log 2>&1 &
           sleep 5
@@ -53,6 +56,7 @@ jobs:
           profile: pixel_7
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          working-directory: ./mobile-qa
           script: |
             adb wait-for-device
             npm test
@@ -63,6 +67,6 @@ jobs:
         with:
           name: mobile-e2e-test-reports
           path: |
-            reports/**
-            appium.log
+            mobile-qa/reports/**
+            mobile-qa/appium.log
           retention-days: 14
